@@ -17,6 +17,7 @@ EMAIL_USER=sswar3939@gmail.com
 EMAIL_PASSWORD=your_gmail_app_password
 ENQUIRY_EMAIL_RECIPIENT=sswar3939@gmail.com
 FRONTEND_URL=https://your-frontend.vercel.app
+PLOT_DETECTOR_URL=https://your-ai-service.onrender.com/detect-plots (optional)
 ```
 
 **Render Settings:**
@@ -48,7 +49,17 @@ VITE_API_URL=https://your-backend-name.onrender.com/api
 3. ✅ Deploy frontend to Vercel with `VITE_API_URL` = backend URL + `/api`
 4. ✅ Note frontend URL (e.g., `https://shreeji-associates.vercel.app`)
 5. ✅ Update backend `FRONTEND_URL` in Render with frontend URL
-6. ✅ Test deployment
+6. ⚠️ **Optional:** Deploy AI polygon service (if using automatic plot detection)
+7. ✅ Test deployment
+
+### AI Polygon Service (Optional)
+
+If you use automatic plot detection:
+- Deploy `ai-polygon-service` to Render (or Railway, Google Cloud Run, etc.)
+- Add `PLOT_DETECTOR_URL` to backend environment variables
+- See `ai-polygon-service/DEPLOYMENT.md` for details
+
+**Note:** You can skip this if you only use manual plot configuration.
 
 ---
 

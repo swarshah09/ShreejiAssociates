@@ -44,6 +44,9 @@ CLOUDINARY_API_SECRET=your_api_secret
 # SMTP Configuration (alternative to Gmail)
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
+
+# AI Polygon Detection Service (optional)
+PLOT_DETECTOR_URL=https://your-ai-service-url.com/detect-plots
 ```
 
 ## Frontend Environment Variables

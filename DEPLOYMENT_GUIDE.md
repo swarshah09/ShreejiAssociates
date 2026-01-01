@@ -69,6 +69,9 @@ ENQUIRY_EMAIL_RECIPIENT=sswar3939@gmail.com
 
 # Frontend URL (will get this after deploying frontend)
 FRONTEND_URL=https://your-frontend-domain.vercel.app
+
+# AI Polygon Service (optional - add after deploying AI service in Step 6)
+PLOT_DETECTOR_URL=https://your-ai-service-url.onrender.com/detect-plots
 ```
 
 **Important Notes:**
@@ -169,7 +172,52 @@ After deploying frontend, you need to update the backend's `FRONTEND_URL`:
 
 ---
 
-## Step 6: Custom Domains (Optional)
+## Step 6: Deploy AI Polygon Service (Optional but Recommended)
+
+The AI polygon detection service is used for automatic plot detection from images. If you use this feature, deploy it separately.
+
+### 6.1 Deploy to Render (Easiest)
+
+1. **Create New Web Service on Render**
+   - Go to Render Dashboard
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+
+2. **Configure:**
+   - **Name:** `ai-polygon-service`
+   - **Environment:** `Docker` (recommended) or `Python 3`
+   - **Root Directory:** `ai-polygon-service`
+   - **Dockerfile Path:** `ai-polygon-service/Dockerfile` (if using Docker)
+   - **Build Command:** `pip install -r requirements.txt` (if Python)
+   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+3. **Environment Variables:**
+   ```env
+   PORT=10000
+   ```
+
+4. **Note:** The Dockerfile includes Tesseract OCR installation. If using Python directly, you may need to install Tesseract on the system.
+
+5. **Copy the service URL** (e.g., `https://ai-polygon-service.onrender.com`)
+
+### 6.2 Update Backend Configuration
+
+1. Go to your **backend service** on Render
+2. Add environment variable:
+   ```env
+   PLOT_DETECTOR_URL=https://your-ai-service-url.onrender.com/detect-plots
+   ```
+3. Save and redeploy backend
+
+### 6.3 Alternative: Skip AI Service (Manual Plot Configuration)
+
+If you don't need automatic plot detection, you can skip this step. The admin can still configure plots manually using the Grid Mode or Manual Mode tools in the admin panel.
+
+**See:** `ai-polygon-service/DEPLOYMENT.md` for detailed deployment options.
+
+---
+
+## Step 7: Custom Domains (Optional)
 
 ### 6.1 Backend Custom Domain (Render)
 1. In Render dashboard → **"Settings"** → **"Custom Domains"**
