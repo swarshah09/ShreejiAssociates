@@ -27,9 +27,14 @@ const normalizeOrigin = (url) => {
 
 const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, health checks, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+
     // In development, allow localhost
     if (process.env.NODE_ENV !== 'production') {
-      if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
         return callback(null, true);
       }
     }
