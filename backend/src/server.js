@@ -19,16 +19,43 @@ connectDB();
 
 // Middleware
 // CORS configuration - restrict to frontend URL in production
+// Normalize FRONTEND_URL by removing trailing slash
+const normalizeOrigin = (url) => {
+  if (!url) return null;
+  return url.replace(/\/+$/, ''); // Remove trailing slashes
+};
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173'),
+  origin: (origin, callback) => {
+    // In development, allow localhost
+    if (process.env.NODE_ENV !== 'production') {
+      if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true);
+      }
+    }
+
+    // Get normalized frontend URL (without trailing slash)
+    const allowedOrigin = normalizeOrigin(process.env.FRONTEND_URL);
+    
+    // In production, require FRONTEND_URL to be set
+    if (process.env.NODE_ENV === 'production' && !allowedOrigin) {
+      console.warn('⚠️  WARNING: FRONTEND_URL not set in production. CORS may be restricted.');
+      return callback(new Error('CORS: FRONTEND_URL not configured'));
+    }
+
+    // Normalize the incoming origin (remove trailing slash)
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    // Allow request if origins match (handles with/without trailing slash)
+    if (normalizedOrigin === allowedOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: Origin ${origin} not allowed. Expected: ${allowedOrigin}`));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
-
-// In production, require FRONTEND_URL to be set
-if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
-  console.warn('⚠️  WARNING: FRONTEND_URL not set in production. CORS may be restricted.');
-}
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Increase limit for large images
@@ -64,8 +91,8 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   if (process.env.NODE_ENV === 'development') {
-    console.log(`📡 API available at http://localhost:${PORT}/api`);
-    console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📡 API available at http://localhost:${PORT}/api`);
+  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   } else {
     console.log(`📡 API available at /api`);
     console.log(`🏥 Health check: /api/health`);
