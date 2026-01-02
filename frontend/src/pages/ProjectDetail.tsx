@@ -493,6 +493,7 @@ const ProjectDetail = () => {
       <section className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden">
         <img
           src={project.heroImage || project.image}
+          fetchPriority="high"
           alt={project.name}
           className="w-full h-full object-cover"
         />
