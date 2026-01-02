@@ -63,6 +63,7 @@ export const PlotCanvas: React.FC<PlotCanvasProps> = ({
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = React.useState(false);
   const [lastPointerPosition, setLastPointerPosition] = React.useState({ x: 0, y: 0 });
+  const [touchStartPos, setTouchStartPos] = React.useState<{ x: number; y: number } | null>(null);
   const stageRef = React.useRef<any>(null);
 
   // Use provided ref or create internal ref
@@ -234,14 +235,20 @@ export const PlotCanvas: React.FC<PlotCanvasProps> = ({
 
   // Handle pan (drag to move)
   const handleStageMouseDown = (e: any) => {
-    // Only allow panning if not in drawing mode and not clicking on a plot
-    if (!drawingMode && e.target.getType() !== 'Line' && e.target.getType() !== 'Circle') {
+    const target = e.target;
+    const targetType = target.getType ? target.getType() : '';
+    
+    // Only allow panning if not in drawing mode and not clicking/touching on a plot or circle
+    if (!drawingMode && targetType !== 'Line' && targetType !== 'Circle') {
       setIsDragging(true);
-      const stage = e.target.getStage();
+      const stage = target.getStage();
       const pointerPos = stage.getPointerPosition();
       if (pointerPos) {
         setLastPointerPosition(pointerPos);
       }
+    } else {
+      // If touching a plot, don't start dragging
+      setIsDragging(false);
     }
   };
 
@@ -262,6 +269,62 @@ export const PlotCanvas: React.FC<PlotCanvasProps> = ({
 
   const handleStageMouseUp = () => {
     setIsDragging(false);
+    setTouchStartPos(null);
+  };
+  
+  // Handle touch start - track initial position to distinguish tap from drag
+  const handleStageTouchStart = (e: any) => {
+    const target = e.target;
+    const targetType = target.getType ? target.getType() : '';
+    
+    // If touching a plot (Line) or circle, don't start dragging
+    if (targetType === 'Line' || targetType === 'Circle') {
+      setIsDragging(false);
+      setTouchStartPos(null);
+      return;
+    }
+    
+    // Track touch position for tap detection
+    const stage = target.getStage();
+    const pointerPos = stage.getPointerPosition();
+    if (pointerPos) {
+      setTouchStartPos(pointerPos);
+      setLastPointerPosition(pointerPos);
+    }
+  };
+  
+  // Handle touch move - only start dragging if moved significantly
+  const handleStageTouchMove = (e: any) => {
+    if (!touchStartPos) return;
+    
+    const stage = e.target.getStage();
+    const pointerPos = stage.getPointerPosition();
+    if (pointerPos) {
+      // Calculate distance moved
+      const dx = Math.abs(pointerPos.x - touchStartPos.x);
+      const dy = Math.abs(pointerPos.y - touchStartPos.y);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Only start dragging if moved more than 5 pixels (prevents accidental drags on taps)
+      if (distance > 5 && !isDragging) {
+        setIsDragging(true);
+      }
+      
+      if (isDragging) {
+        const newPosition = {
+          x: position.x + (pointerPos.x - lastPointerPosition.x),
+          y: position.y + (pointerPos.y - lastPointerPosition.y),
+        };
+        setPosition(newPosition);
+        setLastPointerPosition(pointerPos);
+      }
+    }
+  };
+  
+  // Handle touch end
+  const handleStageTouchEnd = () => {
+    setIsDragging(false);
+    setTouchStartPos(null);
   };
 
   // Handle vertex drag in edit mode
@@ -352,9 +415,9 @@ export const PlotCanvas: React.FC<PlotCanvasProps> = ({
             onMouseDown={handleStageMouseDown}
             onMouseMove={handleStageMouseMove}
             onMouseUp={handleStageMouseUp}
-            onTouchStart={handleStageMouseDown}
-            onTouchMove={handleStageMouseMove}
-            onTouchEnd={handleStageMouseUp}
+            onTouchStart={handleStageTouchStart}
+            onTouchMove={handleStageTouchMove}
+            onTouchEnd={handleStageTouchEnd}
             style={{ cursor: isDragging ? 'grabbing' : drawingMode ? 'crosshair' : editMode ? 'pointer' : 'grab' }}
           >
             <Layer>
@@ -419,6 +482,18 @@ export const PlotCanvas: React.FC<PlotCanvasProps> = ({
                     onMouseLeave={() => setHoveredPlotId(null)}
                     onClick={(e) => {
                       e.cancelBubble = true;
+                      if (editMode && onPlotSelect) {
+                        onPlotSelect(plot.id);
+                      } else {
+                        setInternalSelectedPlotId(plot.id);
+                        if (onSelectPlot) {
+                          onSelectPlot(plot);
+                        }
+                      }
+                    }}
+                    onTap={(e) => {
+                      e.cancelBubble = true;
+                      // Handle tap for mobile devices
                       if (editMode && onPlotSelect) {
                         onPlotSelect(plot.id);
                       } else {
