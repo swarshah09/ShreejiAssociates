@@ -43,6 +43,28 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
     };
   }, [isDropdownOpen]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      // Lock body scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore scroll position
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -122,7 +144,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-[70]"
+            className="fixed inset-0 bg-black/50 z-[9998]"
           />
 
           {/* Modal */}
@@ -130,9 +152,9 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-0 z-[80] flex items-center justify-center p-4 pt-24"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pt-24 pointer-events-none"
           >
-            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[calc(100vh-8rem)] overflow-auto border border-gray-100 flex flex-col">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[calc(100vh-8rem)] overflow-auto border border-gray-100 flex flex-col pointer-events-auto">
               {/* Header */}
               <div className="sticky top-0 bg-gradient-to-r from-premium-gold via-premium-gold-light to-premium-gold-bright px-6 py-5 rounded-t-2xl flex justify-between items-center shadow-lg z-10">
                 <h2 className="text-2xl font-bold text-premium-navy">Property Enquiry</h2>
@@ -159,7 +181,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                           errors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="Enter first name"
@@ -179,7 +201,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                           errors.lastName ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="Enter last name"
@@ -201,7 +223,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleChange}
-                      className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                      className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                         errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'
                       }`}
                       placeholder="Enter phone number"
@@ -222,7 +244,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                      className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                         errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
                       }`}
                       placeholder="Enter email address"
@@ -244,7 +266,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                           errors.city ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="City"
@@ -264,7 +286,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                         name="state"
                         value={formData.state}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                           errors.state ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="State / Province"
@@ -284,7 +306,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose }) => {
                         name="postalCode"
                         value={formData.postalCode}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 ${
+                        className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-premium-gold focus:border-premium-gold transition-all duration-200 text-gray-900 placeholder:text-gray-400 ${
                           errors.postalCode ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="Postal / Zip Code"
