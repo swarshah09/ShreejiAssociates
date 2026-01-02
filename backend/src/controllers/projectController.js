@@ -8,9 +8,16 @@ const isValidObjectId = (id) => {
 
 // Get all projects
 export const getAllProjects = async (req, res) => {
+  const startTime = Date.now();
   try {
-    // Fetch all projects first, then sort in JavaScript to handle null dates properly
-    const allProjects = await Project.find();
+    // Optimize query: only fetch fields needed for list view (exclude large fields like plots)
+    // Use lean() for faster queries (returns plain JS objects instead of Mongoose documents)
+    const queryStart = Date.now();
+    const allProjects = await Project.find()
+      .select('-plots') // Exclude plots data for list view (saves bandwidth)
+      .lean()
+      .exec();
+    const queryTime = Date.now() - queryStart;
     
     // Sort by startDate (newest first), projects without startDate go to the end
     const sortedProjects = allProjects.sort((a, b) => {
@@ -29,6 +36,13 @@ export const getAllProjects = async (req, res) => {
       // If neither has startDate, sort by createdAt (newest first)
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
+    
+    const totalTime = Date.now() - startTime;
+    
+    // Log performance metrics (only in development or with explicit logging)
+    if (process.env.NODE_ENV === 'development' || process.env.LOG_PERFORMANCE === 'true') {
+      console.log(`📊 getAllProjects: Query: ${queryTime}ms, Total: ${totalTime}ms, Projects: ${sortedProjects.length}`);
+    }
     
     res.json({
       success: true,

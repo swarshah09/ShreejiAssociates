@@ -86,5 +86,10 @@ const projectSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add indexes for better query performance
+projectSchema.index({ startDate: -1 }); // Index for sorting by start date (descending)
+projectSchema.index({ status: 1 }); // Index for filtering by status
+projectSchema.index({ createdAt: -1 }); // Index for sorting by creation date
+
 export default mongoose.model('Project', projectSchema);
 

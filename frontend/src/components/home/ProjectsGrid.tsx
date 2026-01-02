@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Eye, Calendar, Building, Loader } from 'lucide-react';
+import { MapPin, Eye, Calendar, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 // @ts-expect-error - api is a JS file without type definitions
 import { projectAPI } from '../../services/api';
+import { ProjectsGridSkeleton } from './ProjectCardSkeleton';
 
 interface Project {
   _id: string;
@@ -101,9 +102,12 @@ const ProjectsGrid = () => {
     { key: 'past', label: 'Completed' },
   ];
 
-  const filteredProjects = activeFilter === 'all' 
-    ? projects 
-    : projects.filter(project => project.status === activeFilter);
+  // Memoize filtered projects to avoid unnecessary recalculations
+  const filteredProjects = useMemo(() => {
+    return activeFilter === 'all' 
+      ? projects 
+      : projects.filter(project => project.status === activeFilter);
+  }, [projects, activeFilter]);
 
   const getTagColor = (status: string) => {
     switch (status) {
@@ -173,15 +177,8 @@ const ProjectsGrid = () => {
           ))}
         </motion.div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Loader className="h-12 w-12 animate-spin text-premium-gold mx-auto mb-4" />
-              <p className="text-gray-600">Loading projects...</p>
-            </div>
-          </div>
-        )}
+        {/* Loading State - Use Skeleton for Better Perceived Performance */}
+        {loading && <ProjectsGridSkeleton />}
 
         {/* Error State */}
         {error && !loading && (
@@ -229,6 +226,9 @@ const ProjectsGrid = () => {
                         <img
                           src={project.image}
                           alt={project.name}
+                          loading="lazy"
+                          width={800}
+                          height={600}
                           className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute top-4 left-4">

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import projectRoutes from './routes/projectRoutes.js';
@@ -18,6 +19,8 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Middleware
+// Compression middleware - gzip responses for faster transfer
+app.use(compression());
 // CORS configuration - restrict to frontend URL in production
 // Normalize FRONTEND_URL by removing trailing slash
 const normalizeOrigin = (url) => {
@@ -65,6 +68,25 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Increase limit for large images
 app.use(express.urlencoded({ extended: true, limit: '50mb' })); // Increase limit for large images
+
+// Cache control middleware for API responses
+app.use('/api/projects', (req, res, next) => {
+  // Cache GET requests for 5 minutes, no cache for POST/PUT/DELETE
+  if (req.method === 'GET') {
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+    res.set('ETag', 'W/"projects"'); // Enable ETag for better caching
+  }
+  next();
+});
+
+// Cache static asset responses (if serving any)
+app.use((req, res, next) => {
+  // Cache static assets longer
+  if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+    res.set('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year for static assets
+  }
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
