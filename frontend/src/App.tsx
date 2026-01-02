@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
 
@@ -42,6 +43,7 @@ function App() {
           </motion.main>
         </div>
       </Router>
+      <SpeedInsights />
     </AuthProvider>
   );
 }
