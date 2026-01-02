@@ -33,8 +33,6 @@ const connectDB = async () => {
         maxPoolSize: 10, // Maximum number of connections in the pool
         minPoolSize: 2, // Minimum number of connections to maintain
         maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
-        bufferCommands: false, // Disable mongoose buffering
-        bufferMaxEntries: 0, // Disable mongoose buffering
       };
 
       cachedConnection.promise = mongoose.connect(mongoURI, opts).then((mongoose) => {
